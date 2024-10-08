@@ -16,6 +16,23 @@
   ROOT          : 'C:\Users\magic\Desktop\semantic-segmentation-main\semantic-segmentation\ADEChallengeData2016\'   # dataset root path
   IGNORE_LABEL  : -1
 ```
+和
+```
+EVAL:
+  MODEL_PATH    : 'checkpoints/backbones/mit/segformer.b2.ade.pth'  # trained model file path
+  IMAGE_SIZE    : [512, 512]                                                            # evaluation image size in (h, w)                       
+  MSF: 
+    ENABLE      : false                                                                 # multi-scale and flip evaluation  
+    FLIP        : true                                                                  # use flip in evaluation  
+    SCALES      : [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]                                     # scales used in MSF evaluation                
+
+
+TEST:
+  MODEL_PATH    : 'checkpoints/backbones/mit/segformer.b2.ade.pth'  # trained model file path
+  FILE          : 'assests/ade'                                                         # filename or foldername 
+  IMAGE_SIZE    : [512, 512]                                                            # inference image size in (h, w)
+  OVERLAY       : true       
+```
 
 ---
 ## 2. 下载backbone
