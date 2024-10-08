@@ -16,6 +16,21 @@
   ROOT          : 'C:\Users\magic\Desktop\semantic-segmentation-main\semantic-segmentation\ADEChallengeData2016\'   # dataset root path
   IGNORE_LABEL  : -1
 ```
+
+
+---
+## 2. 下载backbone
+![image](https://github.com/user-attachments/assets/585e5c1e-872f-4e9a-b342-e04479847ccc)
+
+传送：我忘了在哪下的了😅
+
+记得改configs：
+```
+  MODEL:                                    
+  NAME          : SegFormer                                           # name of the model you are using
+  BACKBONE      : MiT-B2                                                  # model variant
+  PRETRAINED    : 'checkpoints/backbones/mit/segformer.b2.ade.pth'              # backbone model's weight
+```
 和
 ```
 EVAL:
@@ -32,20 +47,6 @@ TEST:
   FILE          : 'assests/ade'                                                         # filename or foldername 
   IMAGE_SIZE    : [512, 512]                                                            # inference image size in (h, w)
   OVERLAY       : true       
-```
-
----
-## 2. 下载backbone
-![image](https://github.com/user-attachments/assets/585e5c1e-872f-4e9a-b342-e04479847ccc)
-
-传送：我忘了在哪下的了😅
-
-记得改configs：
-```
-  MODEL:                                    
-  NAME          : SegFormer                                           # name of the model you are using
-  BACKBONE      : MiT-B2                                                  # model variant
-  PRETRAINED    : 'checkpoints/backbones/mit/segformer.b2.ade.pth'              # backbone model's weight
 ```
 
 ---
