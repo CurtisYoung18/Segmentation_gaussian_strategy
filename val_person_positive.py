@@ -15,8 +15,8 @@ from torch.cuda.amp import autocast
 
 import os
 
-# Import the modified PerturbModelDual
-from one_target_pert import PerturbModelOneTarget
+# Import the modified PerturbModelOneTarget
+from one_target_pert import PerturbModelOneTarget  # 确保这个导入路径正确
 
 def save_results_to_txt(results, file_path):
     with open(file_path, 'a') as f:
@@ -147,31 +147,15 @@ def main(cfg):
     if person_class_idx is None:
         raise ValueError("Class 'person' not found in class names.")
 
-    # Initialize metrics summary file
-    metrics_file = Path(cfg['SAVE_DIR']) / 'metrics_summary.txt'
-    with open(metrics_file, 'w') as f:
-        f.write("pert_ratios = [\n")
-        f.write("]\n\n")
-        f.write("mean_ious = [\n")
-        f.write("]\n\n")
-        f.write("mean_f1s = [\n")
-        f.write("]\n\n")
-        f.write("mean_accs = [\n")
-        f.write("]\n\n")
-        f.write("person_ious = [\n")
-        f.write("]\n\n")
-        f.write("person_accs = [\n")
-        f.write("]\n")
-
     for pert_ratio in pert_ratio_list:
         ratio_folder = Path(cfg['SAVE_DIR']) / f"pert_ratio_{pert_ratio}"
-        ratio_folder.mkdir(parents=True, exist_ok=True)
-
         txt_file_path = ratio_folder / 'evaluation_results.txt'
 
         if txt_file_path.exists():
             print(f"Results for perturb ratio {pert_ratio} already exist. Skipping...")
             continue
+
+        ratio_folder.mkdir(parents=True, exist_ok=True)
 
         if pert_ratio == 0.0:
             current_perturb_model = None  # Use original model
@@ -182,13 +166,13 @@ def main(cfg):
             else:
                 perturb_model.set_pert_ratio(pert_ratio)
             current_perturb_model = perturb_model
-            print(f"\nEvaluating with perturb ratio: {pert_ratio} (Using PerturbModelDual)")
+            print(f"\nEvaluating with perturb ratio: {pert_ratio} (Using PerturbModelOneTarget)")
 
-        if eval_cfg['MSF']['ENABLE']:
+        if eval_cfg.get('MSF', {}).get('ENABLE', False):
             acc, macc, f1, mf1, ious, miou, person_acc, person_iou = evaluate_msf(
                 model, dataloader, device,
-                eval_cfg['MSF']['SCALES'],
-                eval_cfg['MSF']['FLIP'],
+                eval_cfg['MSF'].get('SCALES', []),
+                eval_cfg['MSF'].get('FLIP', False),
                 current_perturb_model,
                 person_class_idx
             )
@@ -199,8 +183,8 @@ def main(cfg):
 
         # Prepare TXT results
         result_txt = f"Perturb Ratio: {pert_ratio}\n"
-        for idx, class_name in enumerate(class_names):
-            result_txt += f"  {class_name} - IoU: {ious[idx]:.4f}, F1: {f1[idx]:.4f}, Acc: {acc[idx]:.4f}\n"
+        for idx_class, class_name in enumerate(class_names):
+            result_txt += f"  {class_name} - IoU: {ious[idx_class]:.4f}, F1: {f1[idx_class]:.4f}, Acc: {acc[idx_class]:.4f}\n"
         result_txt += f"  Mean IoU: {miou:.4f}, Mean F1: {mf1:.4f}, Mean Acc: {macc:.4f}\n"
         result_txt += f"  Person IoU: {person_iou:.4f}, Person Acc: {person_acc:.4f}\n"
 
@@ -209,40 +193,6 @@ def main(cfg):
 
         # Print results to console
         print(result_txt)
-
-        # Append metrics to summary file
-        with open(metrics_file, 'r') as f:
-            lines = f.readlines()
-
-        # Update pert_ratios
-        idx = lines.index("pert_ratios = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{pert_ratio},\n"
-
-        # Update mean_ious
-        idx = lines.index("mean_ious = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{miou:.4f},\n"
-
-        # Update mean_f1s
-        idx = lines.index("mean_f1s = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{mf1:.4f},\n"
-
-        # Update mean_accs
-        idx = lines.index("mean_accs = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{macc:.4f},\n"
-
-        # Update person_ious
-        idx = lines.index("person_ious = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{person_iou:.4f},\n"
-
-        # Update person_accs
-        idx = lines.index("person_accs = [\n") + 1
-        lines[idx] = lines[idx].strip() + f"{person_acc:.4f},\n"
-
-        # Write back to the file
-        with open(metrics_file, 'w') as f:
-            f.writelines(lines)
-
-    print(f"Metrics summary saved to {metrics_file}")
 
     print(f"All results saved to {cfg['SAVE_DIR']}")
 
